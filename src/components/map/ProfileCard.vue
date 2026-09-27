@@ -1,11 +1,11 @@
 <template>
   <div
-    class="absolute right-6 top-6 z-20 w-[calc(100%-3rem)] max-w-sm rounded-2xl bg-white/95 p-5 shadow-2xl backdrop-blur"
+    class="absolute right-6 top-6 z-20 w-[calc(100%-3rem)] max-w-xs rounded-2xl bg-white/95 p-5 shadow-2xl backdrop-blur"
   >
     <img :src="profileImage" :alt="fullName" class="block h-auto w-full rounded-xl" />
 
-    <div class="pt-5">
-      <h2 class="text-2xl font-semibold text-slate-900">
+    <div class="pt-5 text-center">
+      <h2 class="text-xl font-semibold text-slate-900">
         <span v-if="title">
           {{ title }}
         </span>
