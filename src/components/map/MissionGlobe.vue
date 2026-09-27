@@ -68,13 +68,13 @@
       leave-from-class="translate-y-0 opacity-100"
       leave-to-class="translate-y-2 opacity-0"
     >
-      <div v-if="selectedProfile" class="fixed inset-0 z-20" @click.self="returnToGlobe">
+      <div v-if="selectedProfile" class="fixed inset-0 z-20" @click.self="closeSelectedProfile">
         <ProfileCard :profile="selectedProfile" />
       </div>
     </Transition>
 
     <!-- PROFILE DOCK -->
-    <ProfileDock :profiles="visibleProfiles" @select="selectDockProfile" />
+    <ProfileDock :profiles="sortedProfiles" @select="selectDockProfile" />
 
     <!-- MENU -->
     <GlobeMenu :display-mode="displayMode" @display-mode="changeDisplayMode" />
@@ -140,6 +140,22 @@ const visibleProfiles = computed(() => {
   return profiles.value.filter(isProfileVisible)
 })
 
+const sortedProfiles = computed(() => {
+  return [...visibleProfiles.value].sort((a, b) => {
+    const lastNameCompare = (a.lastName || '').localeCompare(b.lastName || '', undefined, {
+      sensitivity: 'base',
+    })
+
+    if (lastNameCompare !== 0) {
+      return lastNameCompare
+    }
+
+    return (a.firstName || '').localeCompare(b.firstName || '', undefined, {
+      sensitivity: 'base',
+    })
+  })
+})
+
 /*
 |--------------------------------------------------------------------------
 | Map Movement
@@ -184,12 +200,13 @@ function moveToProfile(profile) {
 
 const {
   active: tourActive,
+  paused: tourPaused,
   start: startTour,
   stop: stopTour,
   pause: pauseTour,
   resume: resumeTour,
 } = useProfileTour({
-  profiles: visibleProfiles,
+  profiles: sortedProfiles,
 
   moveToProfile,
 
@@ -255,34 +272,28 @@ async function selectProfile(profile) {
 }
 
 async function selectDockProfile(profile) {
-  clearManualProfileTimer()
-
-  const shouldResumeTour = displayMode.value === 'tour'
-
-  if (shouldResumeTour) {
-    pauseTour()
+  if (manualProfileTimer) {
+    clearTimeout(manualProfileTimer)
+    manualProfileTimer = null
   }
 
-  selectedProfile.value = null
-  userInteracting = true
+  if (displayMode.value === 'tour') {
+    pauseTour()
+  }
 
   await moveToProfile(profile)
 
   selectedProfile.value = profile
-  userInteracting = false
 
   manualProfileTimer = setTimeout(() => {
     selectedProfile.value = null
+    manualProfileTimer = null
 
-    if (shouldResumeTour) {
+    if (displayMode.value === 'tour' && tourActive.value && tourPaused.value) {
       resumeTour()
-      return
     }
-
-    returnToGlobe()
   }, 10000)
 }
-
 function clearManualProfileTimer() {
   if (!manualProfileTimer) {
     return
@@ -291,6 +302,27 @@ function clearManualProfileTimer() {
   clearTimeout(manualProfileTimer)
 
   manualProfileTimer = null
+}
+
+function closeSelectedProfile() {
+  if (manualProfileTimer) {
+    clearTimeout(manualProfileTimer)
+    manualProfileTimer = null
+  }
+
+  selectedProfile.value = null
+
+  if (displayMode.value === 'tour' && tourActive.value && tourPaused.value) {
+    setTimeout(() => {
+      resumeTour()
+    }, 300)
+
+    return
+  }
+
+  if (displayMode.value !== 'tour') {
+    returnToGlobe()
+  }
 }
 
 /*

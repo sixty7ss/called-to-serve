@@ -34,16 +34,23 @@ export function useProfileTour({
     return active.value && !paused.value && currentRunId === runId && profiles.value.length > 0
   }
 
-  function start() {
+  function start({ reset = false } = {}) {
     if (!profiles.value.length) {
       return
     }
 
     stop()
 
+    if (reset) {
+      currentIndex = 0
+    }
+
+    if (currentIndex >= profiles.value.length) {
+      currentIndex = 0
+    }
+
     active.value = true
     paused.value = false
-    currentIndex = 0
 
     showProfile(runId)
   }
