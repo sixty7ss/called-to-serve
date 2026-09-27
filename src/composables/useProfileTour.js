@@ -1,5 +1,7 @@
 import { onBeforeUnmount, ref } from 'vue'
 
+const TOUR_PROFILE_KEY = 'called-to-serve-tour-profile'
+
 export function useProfileTour({
   profiles,
   moveToProfile,
@@ -15,6 +17,33 @@ export function useProfileTour({
   let tourTimer = null
   let runId = 0
 
+  function getSavedProfileId() {
+    return sessionStorage.getItem(TOUR_PROFILE_KEY)
+  }
+
+  function saveCurrentProfile() {
+    const profile = profiles.value[currentIndex]
+
+    if (!profile?.id) {
+      return
+    }
+
+    sessionStorage.setItem(TOUR_PROFILE_KEY, profile.id)
+  }
+
+  function restoreCurrentIndex() {
+    const savedProfileId = getSavedProfileId()
+
+    if (!savedProfileId) {
+      currentIndex = 0
+      return
+    }
+
+    const savedIndex = profiles.value.findIndex((profile) => profile.id === savedProfileId)
+
+    currentIndex = savedIndex >= 0 ? savedIndex : 0
+  }
+
   function wait(milliseconds) {
     return new Promise((resolve) => {
       setTimeout(resolve, milliseconds)
@@ -27,6 +56,7 @@ export function useProfileTour({
     }
 
     clearTimeout(tourTimer)
+
     tourTimer = null
   }
 
@@ -43,10 +73,10 @@ export function useProfileTour({
 
     if (reset) {
       currentIndex = 0
-    }
 
-    if (currentIndex >= profiles.value.length) {
-      currentIndex = 0
+      saveCurrentProfile()
+    } else {
+      restoreCurrentIndex()
     }
 
     active.value = true
@@ -74,6 +104,7 @@ export function useProfileTour({
     runId += 1
 
     clearTourTimer()
+
     closeProfile()
   }
 
@@ -83,6 +114,8 @@ export function useProfileTour({
     }
 
     paused.value = false
+
+    restoreCurrentIndex()
 
     showProfile(runId)
   }
@@ -101,6 +134,12 @@ export function useProfileTour({
     }
 
     const profile = profiles.value[currentIndex]
+
+    if (!profile) {
+      return
+    }
+
+    saveCurrentProfile()
 
     await moveToProfile(profile)
 
@@ -122,11 +161,13 @@ export function useProfileTour({
 
     currentIndex = (currentIndex + 1) % profiles.value.length
 
+    saveCurrentProfile()
+
     showProfile(currentRunId)
   }
 
   onBeforeUnmount(() => {
-    stop()
+    clearTourTimer()
   })
 
   return {

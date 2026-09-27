@@ -9,6 +9,7 @@
             v-for="profile in profiles"
             :key="profile.id"
             :profile="profile"
+            :active="profile.id === activeProfileId"
             @select="$emit('select', $event)"
           />
         </div>
@@ -48,6 +49,10 @@ const props = defineProps({
   profiles: {
     type: Array,
     default: () => [],
+  },
+  activeProfileId: {
+    type: String,
+    default: null,
   },
 })
 

@@ -31,6 +31,10 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  active: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 defineEmits(['select'])
@@ -72,6 +76,8 @@ const markerClasses = computed(() => {
       : upcoming.value
         ? 'border-amber-400 opacity-90'
         : 'border-white',
+
+    props.active ? 'scale-110 ring-4 ring-sky-400 ring-offset-2 ring-offset-slate-950' : '',
   ]
 })
 

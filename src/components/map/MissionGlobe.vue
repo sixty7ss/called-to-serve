@@ -74,7 +74,11 @@
     </Transition>
 
     <!-- PROFILE DOCK -->
-    <ProfileDock :profiles="sortedProfiles" @select="selectDockProfile" />
+    <ProfileDock
+      :profiles="sortedProfiles"
+      :active-profile-id="activeProfileId"
+      @select="selectDockProfile"
+    />
 
     <!-- MENU -->
     <GlobeMenu :display-mode="displayMode" @display-mode="changeDisplayMode" />
@@ -105,6 +109,7 @@ const mapContainer = ref(null)
 
 const profiles = ref([])
 const selectedProfile = ref(null)
+const activeProfileId = ref(null)
 
 const displayMode = ref('tour')
 
@@ -167,6 +172,8 @@ function moveToProfile(profile) {
     return Promise.resolve()
   }
 
+  activeProfileId.value = profile.id
+
   return new Promise((resolve) => {
     map.stop()
 
@@ -184,7 +191,6 @@ function moveToProfile(profile) {
 
     map.flyTo({
       center: [profile.longitude, profile.latitude],
-
       zoom: 5,
       duration: 4500,
       essential: true,
@@ -425,6 +431,8 @@ async function loadProfiles() {
           profile,
         })
       })
+
+      updateMarkerStacking()
     })
 
     updateMarkerVisibility()
@@ -457,6 +465,14 @@ watch([showUpcoming, showCompleted], () => {
     startTour()
   }
 })
+
+function updateMarkerStacking() {
+  markerApps.forEach(({ marker, profile }) => {
+    const element = marker.getElement()
+
+    element.style.zIndex = profile.id === activeProfileId.value ? '1000' : '1'
+  })
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -554,6 +570,10 @@ function initializeMap() {
 | Lifecycle
 |--------------------------------------------------------------------------
 */
+
+watch(activeProfileId, () => {
+  updateMarkerStacking()
+})
 
 onMounted(() => {
   initializeMap()
