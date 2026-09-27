@@ -1,5 +1,5 @@
 <template>
-  <main class="fixed inset-0 h-screen w-screen overflow-hidden bg-black">
+  <main class="fixed inset-0 h-dvh w-screen overflow-hidden bg-black">
     <div ref="mapContainer" class="absolute inset-0 h-full w-full"></div>
 
     <!-- HEADER / FILTERS -->
