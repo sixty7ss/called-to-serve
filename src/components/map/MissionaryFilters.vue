@@ -32,7 +32,7 @@
           ]"
           @click="$emit('update:missionaryStatus', 'returned')"
         >
-          Returned / Completed
+          Returned
         </button>
       </div>
 
