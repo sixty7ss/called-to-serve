@@ -8,7 +8,8 @@ export const homeView = {
 export const secondsPerRevolution = 120
 
 // export const mapStyle = 'mapbox://styles/mapbox/streets-v12'
-export const mapStyle = 'mapbox://styles/sixty7ss/cmukefelc006i01r846rp02iy'
+// export const mapStyle = 'mapbox://styles/sixty7ss/cmukefelc006i01r846rp02iy' // no streets
+export const mapStyle = 'mapbox://styles/sixty7ss/cmukepk00006j01r87zaxgmjx' // simple streets
 
 export const globeFog = {
   color: 'rgb(186, 210, 235)',

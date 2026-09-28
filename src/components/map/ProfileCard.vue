@@ -26,9 +26,7 @@
 
 <script setup>
 import { computed } from 'vue'
-
 import { formatMissionDates } from '@/utils/dates'
-
 import { getFullName, getMissionaryTitle, getProfileImage } from '@/utils/profile'
 
 const props = defineProps({

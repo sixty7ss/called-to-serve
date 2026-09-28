@@ -105,7 +105,7 @@ function searchLocations() {
 
       suggestions.value = []
     }
-  }, 300)
+  }, 500)
 }
 
 async function selectSuggestion(suggestion) {
