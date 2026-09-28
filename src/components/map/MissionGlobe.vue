@@ -115,7 +115,8 @@ function moveToProfile(profile) {
     map.once('moveend', resolve)
     if (profile.bounds) {
       map.fitBounds(profile.bounds, {
-        padding: 100,
+        padding: 300,
+        maxZoom: 6,
         duration: 4500,
         essential: true,
       })
@@ -123,7 +124,7 @@ function moveToProfile(profile) {
     }
     map.flyTo({
       center: [profile.longitude, profile.latitude],
-      zoom: 5,
+      zoom: 4,
       duration: 4500,
       essential: true,
     })
@@ -372,8 +373,8 @@ function handleStyleLoad() {
   if (!map) {
     return
   }
+
   map.setFog(globeFog)
-  simplifyMapStyle()
 }
 async function handleMapLoad() {
   map?.resize()
@@ -382,24 +383,6 @@ async function handleMapLoad() {
   if (displayMode.value === 'tour' && visibleProfiles.value.length) {
     startTour()
   }
-}
-function simplifyMapStyle() {
-  if (!map) {
-    return
-  }
-  const style = map.getStyle()
-  style.layers?.forEach((layer) => {
-    const id = layer.id.toLowerCase()
-    const hideLayer =
-      id.includes('poi') ||
-      id.includes('transit') ||
-      id.includes('building') ||
-      id.includes('road-label') ||
-      id.includes('road-number')
-    if (hideLayer && map.getLayer(layer.id)) {
-      map.setLayoutProperty(layer.id, 'visibility', 'none')
-    }
-  })
 }
 
 /*

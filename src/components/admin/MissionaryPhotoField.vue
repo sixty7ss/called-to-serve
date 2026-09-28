@@ -1,6 +1,6 @@
 <template>
   <div>
-    <label class="mb-2 block text-sm font-semibold text-slate-700"> Profile Photo </label>
+    <label class="mb-2 block text-sm font-semibold text-slate-700">Profile Photo</label>
 
     <input
       ref="fileInput"
@@ -55,12 +55,17 @@ const props = defineProps({
     type: String,
     default: '',
   },
+
+  isCouple: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['selected', 'remove'])
 
-const previewUrl = ref('')
 const fileInput = ref(null)
+const previewUrl = ref('')
 
 const hasPhoto = computed(() => {
   return Boolean(previewUrl.value || props.existingPhotoUrl)
@@ -74,13 +79,17 @@ const displayPhoto = computed(() => {
   return getProfileImage({
     photoUrl: props.existingPhotoUrl,
     gender: props.gender,
+    isCouple: props.isCouple,
+    missionaryType: props.isCouple ? 'senior' : 'fullTime',
   })
 })
 
 function handlePhoto(event) {
   const file = event.target.files?.[0]
 
-  if (!file) return
+  if (!file) {
+    return
+  }
 
   clearPreview()
 
@@ -106,7 +115,6 @@ function clearPreview() {
   }
 
   URL.revokeObjectURL(previewUrl.value)
-
   previewUrl.value = ''
 }
 

@@ -1,8 +1,12 @@
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { isMissionCompleted } from '@/utils/profile'
 
 export function useMissionaryFilters(profiles) {
+  const FILTER_RESET_DELAY = 60000
+
+  let filterResetTimer = null
+
   const missionaryStatus = ref('current')
   const missionaryType = ref('fullTime')
 
@@ -152,17 +156,23 @@ export function useMissionaryFilters(profiles) {
 
   const sortedProfiles = computed(() => {
     return [...visibleProfiles.value].sort((a, b) => {
-      const lastNameCompare = (a.lastName || '').localeCompare(b.lastName || '', undefined, {
-        sensitivity: 'base',
-      })
+      const aDate = a.startDate ? new Date(`${a.startDate}T00:00:00`) : null
 
-      if (lastNameCompare !== 0) {
-        return lastNameCompare
+      const bDate = b.startDate ? new Date(`${b.startDate}T00:00:00`) : null
+
+      if (!aDate && !bDate) {
+        return 0
       }
 
-      return (a.firstName || '').localeCompare(b.firstName || '', undefined, {
-        sensitivity: 'base',
-      })
+      if (!aDate) {
+        return 1
+      }
+
+      if (!bDate) {
+        return -1
+      }
+
+      return aDate - bDate
     })
   })
 
@@ -179,6 +189,50 @@ export function useMissionaryFilters(profiles) {
     selectedDecade.value = ''
   }
 
+  function resetAllFilters() {
+    missionaryStatus.value = 'current'
+    missionaryType.value = 'fullTime'
+
+    selectedLetter.value = ''
+    selectedCountry.value = ''
+    selectedState.value = ''
+    selectedDecade.value = ''
+  }
+
+  function filtersAreDefault() {
+    return (
+      missionaryStatus.value === 'current' &&
+      missionaryType.value === 'fullTime' &&
+      !selectedLetter.value &&
+      !selectedCountry.value &&
+      !selectedState.value &&
+      !selectedDecade.value
+    )
+  }
+
+  function startFilterResetTimer() {
+    clearTimeout(filterResetTimer)
+
+    if (filtersAreDefault()) {
+      return
+    }
+
+    filterResetTimer = setTimeout(() => {
+      resetAllFilters()
+      filterResetTimer = null
+    }, FILTER_RESET_DELAY)
+  }
+
+  function handleUserActivity() {
+    if (filtersAreDefault()) {
+      clearTimeout(filterResetTimer)
+      filterResetTimer = null
+      return
+    }
+
+    startFilterResetTimer()
+  }
+
   watch(missionaryStatus, () => {
     clearRefinementFilters()
   })
@@ -192,6 +246,20 @@ export function useMissionaryFilters(profiles) {
       selectedState.value = ''
     }
   })
+
+  watch(
+    [
+      missionaryStatus,
+      missionaryType,
+      selectedLetter,
+      selectedCountry,
+      selectedState,
+      selectedDecade,
+    ],
+    () => {
+      startFilterResetTimer()
+    },
+  )
 
   return {
     missionaryStatus,
@@ -216,4 +284,30 @@ export function useMissionaryFilters(profiles) {
     isProfileVisible,
     clearRefinementFilters,
   }
+
+  onMounted(() => {
+    window.addEventListener('pointerdown', handleUserActivity)
+
+    window.addEventListener('keydown', handleUserActivity)
+
+    window.addEventListener('wheel', handleUserActivity, {
+      passive: true,
+    })
+
+    window.addEventListener('touchstart', handleUserActivity, {
+      passive: true,
+    })
+  })
+
+  onBeforeUnmount(() => {
+    clearTimeout(filterResetTimer)
+
+    window.removeEventListener('pointerdown', handleUserActivity)
+
+    window.removeEventListener('keydown', handleUserActivity)
+
+    window.removeEventListener('wheel', handleUserActivity)
+
+    window.removeEventListener('touchstart', handleUserActivity)
+  })
 }

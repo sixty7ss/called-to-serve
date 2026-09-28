@@ -1,3 +1,4 @@
+import couplePlaceholder from '@/assets/placeholders/couple-profile.png'
 import femalePlaceholder from '@/assets/placeholders/female-profile.png'
 import malePlaceholder from '@/assets/placeholders/male-profile.png'
 
@@ -14,6 +15,10 @@ export function getMissionaryTitle(profile) {
 }
 
 export function getFullName(profile) {
+  if (profile?.missionaryType === 'senior' && profile?.isCouple) {
+    return profile?.lastName || ''
+  }
+
   return [profile?.firstName, profile?.middleName, profile?.lastName].filter(Boolean).join(' ')
 }
 
@@ -22,7 +27,15 @@ export function getProfileImage(profile) {
     return profile.photoUrl
   }
 
-  return profile?.gender === 'female' ? femalePlaceholder : malePlaceholder
+  if (profile?.missionaryType === 'senior' && profile?.isCouple) {
+    return couplePlaceholder
+  }
+
+  if (profile?.gender === 'female') {
+    return femalePlaceholder
+  }
+
+  return malePlaceholder
 }
 
 export function isMissionCompleted(profile) {
@@ -43,4 +56,25 @@ export function isMissionUpcoming(profile) {
   const startDate = new Date(`${profile.startDate}T00:00:00`)
 
   return new Date() < startDate
+}
+
+export function getAdminDisplayName(profile) {
+  if (profile?.missionaryType === 'senior' && profile?.isCouple) {
+    return `Elder & Sister ${profile.lastName || ''}`.trim()
+  }
+
+  return [getMissionaryTitle(profile), getFullName(profile)].filter(Boolean).join(' ')
+}
+
+export function getProfileDisplayName(profile) {
+  if (profile?.missionaryType === 'senior' && profile?.isCouple) {
+    return [
+      `Elder ${profile.firstName || ''} ${profile.lastName || ''}`,
+      `Sister ${profile.spouseFirstName || ''} ${profile.lastName || ''}`,
+    ]
+      .map((name) => name.replace(/\s+/g, ' ').trim())
+      .join(' & ')
+  }
+
+  return [getMissionaryTitle(profile), getFullName(profile)].filter(Boolean).join(' ')
 }

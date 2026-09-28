@@ -2,15 +2,11 @@
   <div
     class="absolute right-6 top-6 z-20 w-[calc(100%-3rem)] max-w-xs rounded-2xl bg-white/95 p-5 shadow-2xl backdrop-blur"
   >
-    <img :src="profileImage" :alt="fullName" class="block h-auto w-full rounded-xl" />
+    <img :src="profileImage" :alt="displayName" class="block h-auto w-full rounded-xl" />
 
     <div class="pt-5 text-center">
       <h2 class="text-xl font-semibold text-slate-900">
-        <span v-if="title">
-          {{ title }}
-        </span>
-
-        {{ fullName }}
+        {{ displayName }}
       </h2>
 
       <p v-if="formattedLocation" class="mt-2 text-base text-slate-600">
@@ -27,7 +23,7 @@
 <script setup>
 import { computed } from 'vue'
 import { formatMissionDates } from '@/utils/dates'
-import { getFullName, getMissionaryTitle, getProfileImage } from '@/utils/profile'
+import { getProfileDisplayName, getProfileImage } from '@/utils/profile'
 
 const props = defineProps({
   profile: {
@@ -36,12 +32,8 @@ const props = defineProps({
   },
 })
 
-const title = computed(() => {
-  return getMissionaryTitle(props.profile)
-})
-
-const fullName = computed(() => {
-  return getFullName(props.profile)
+const displayName = computed(() => {
+  return getProfileDisplayName(props.profile)
 })
 
 const profileImage = computed(() => {

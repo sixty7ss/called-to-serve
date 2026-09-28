@@ -4,7 +4,7 @@
       <div>
         <h1 class="text-3xl font-bold text-slate-900">Called to Serve</h1>
 
-        <p class="mt-1 text-slate-600">Missionaries</p>
+        <p class="mt-1 text-slate-600">Missionaries from the Safford Arizona Stake</p>
       </div>
 
       <div class="flex gap-2">
@@ -34,6 +34,22 @@
       </div>
     </div>
 
+    <MissionaryAdminFilters
+      :search-query="searchQuery"
+      :status-filter="statusFilter"
+      :type-filter="typeFilter"
+      :country-filter="countryFilter"
+      :countries="countries"
+      :shown-count="shownCount"
+      :has-filters="hasFilters"
+      :has-senior-missionaries="hasSeniorMissionaries"
+      @update:search-query="emit('update:searchQuery', $event)"
+      @update:status-filter="emit('update:statusFilter', $event)"
+      @update:type-filter="emit('update:typeFilter', $event)"
+      @update:country-filter="emit('update:countryFilter', $event)"
+      @clear="emit('clearFilters')"
+    />
+
     <div v-if="loading" class="rounded-2xl bg-white p-8 text-center text-slate-500">
       Loading missionaries...
     </div>
@@ -60,8 +76,9 @@
 
 <script setup>
 import MissionaryListItem from '@/components/admin/MissionaryListItem.vue'
+import MissionaryAdminFilters from '@/components/admin/MissionaryAdminFilters.vue'
 
-defineProps({
+const props = defineProps({
   missionaries: {
     type: Array,
     default: () => [],
@@ -71,9 +88,62 @@ defineProps({
     type: Boolean,
     default: false,
   },
+
+  searchQuery: {
+    type: String,
+    default: '',
+  },
+
+  statusFilter: {
+    type: String,
+    default: '',
+  },
+
+  typeFilter: {
+    type: String,
+    default: '',
+  },
+
+  countryFilter: {
+    type: String,
+    default: '',
+  },
+
+  countries: {
+    type: Array,
+    default: () => [],
+  },
+
+  shownCount: {
+    type: Number,
+    default: 0,
+  },
+
+  hasFilters: {
+    type: Boolean,
+    default: false,
+  },
+
+  hasSeniorMissionaries: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-defineEmits(['add', 'edit', 'delete', 'logout', 'home'])
+const emit = defineEmits([
+  'add',
+  'edit',
+  'delete',
+  'logout',
+  'home',
+
+  'update:searchQuery',
+  'update:statusFilter',
+  'update:typeFilter',
+  'update:countryFilter',
+
+  'clearFilters',
+])
 </script>
 
 <style scoped></style>

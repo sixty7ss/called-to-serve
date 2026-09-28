@@ -40,20 +40,10 @@ async function uploadProfilePhoto(documentId, missionary, imageFile) {
 export async function getMissionaries() {
   const snapshot = await getDocs(collection(db, 'missionaries'))
 
-  return snapshot.docs
-    .map((document) => ({
-      id: document.id,
-      ...document.data(),
-    }))
-    .sort((a, b) => {
-      const lastCompare = (a.lastName || '').localeCompare(b.lastName || '')
-
-      if (lastCompare !== 0) {
-        return lastCompare
-      }
-
-      return (a.firstName || '').localeCompare(b.firstName || '')
-    })
+  return snapshot.docs.map((document) => ({
+    ...document.data(),
+    id: document.id,
+  }))
 }
 
 export async function createMissionary(missionary, imageFile) {

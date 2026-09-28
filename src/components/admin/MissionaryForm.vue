@@ -19,6 +19,7 @@
     </div>
 
     <form class="rounded-2xl bg-white p-6 shadow-sm" @submit.prevent="save">
+      <h2 class="mb-4 text-lg font-semibold text-slate-900">Missionary Information</h2>
       <div class="grid gap-5 md:grid-cols-3">
         <div>
           <label class="mb-2 block text-sm font-semibold text-slate-700"> First Name </label>
@@ -32,7 +33,9 @@
         </div>
 
         <div>
-          <label class="mb-2 block text-sm font-semibold text-slate-700"> Middle Name </label>
+          <label class="mb-2 block text-sm font-semibold text-slate-700">
+            Middle Name (optional)</label
+          >
 
           <input
             v-model="form.middleName"
@@ -42,7 +45,7 @@
         </div>
 
         <div>
-          <label class="mb-2 block text-sm font-semibold text-slate-700"> Last Name </label>
+          <label class="mb-2 block text-sm font-semibold text-slate-700"> Last Name (if )</label>
 
           <input
             v-model="form.lastName"
@@ -64,8 +67,59 @@
           required
         />
       </div>
+      <div class="mt-5">
+        <span class="mb-2 block text-sm font-semibold text-slate-700">Senior Missionaries</span>
+      </div>
 
       <div class="mt-5">
+        <span class="mb-2 block text-sm font-semibold text-slate-700"> Senior Missionaries </span>
+      </div>
+
+      <div class="mt-5 grid gap-5 md:grid-cols-3">
+        <div>
+          <label class="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              :checked="form.missionaryType === 'senior'"
+              class="h-5 w-5 rounded border-slate-300"
+              @change="handleSeniorChange"
+            />
+
+            <div class="text-sm text-slate-500">Check if senior missionary.</div>
+          </label>
+        </div>
+
+        <div>
+          <label
+            v-if="form.missionaryType === 'senior'"
+            class="flex cursor-pointer items-start gap-3"
+          >
+            <input
+              v-model="form.isCouple"
+              type="checkbox"
+              class="h-5 w-5 rounded border-slate-300"
+            />
+
+            <div class="text-sm text-slate-500">
+              Check if this record represents a senior couple.
+            </div>
+          </label>
+        </div>
+
+        <div v-if="form.isCouple">
+          <label class="mb-2 block text-sm font-semibold text-slate-700"> Spouse First Name </label>
+
+          <input
+            v-model="form.spouseFirstName"
+            type="text"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+            placeholder="Spouse first name"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="mt-5" v-if="form.isCouple === false">
         <label class="mb-2 block text-sm font-semibold text-slate-700"> Gender </label>
 
         <select
@@ -74,9 +128,7 @@
           required
         >
           <option value="" disabled>Select gender</option>
-
           <option value="male">Male</option>
-
           <option value="female">Female</option>
         </select>
       </div>
@@ -85,6 +137,7 @@
         <MissionaryPhotoField
           :existing-photo-url="existingPhotoUrl"
           :gender="form.gender"
+          :is-couple="form.isCouple"
           @selected="handlePhotoSelected"
           @remove="handlePhotoRemoved"
         />
@@ -175,17 +228,14 @@ const removeExistingPhoto = ref(false)
 
 const form = reactive({
   firstName: props.missionary?.firstName || '',
-
   middleName: props.missionary?.middleName || '',
-
   lastName: props.missionary?.lastName || '',
-
+  missionaryType: props.missionary?.missionaryType || 'fullTime',
+  isCouple: props.missionary?.isCouple || false,
+  spouseFirstName: props.missionary?.spouseFirstName || '',
   gender: props.missionary?.gender || '',
-
   mission: props.missionary?.mission || '',
-
   startDate: props.missionary?.startDate || '',
-
   endDate: props.missionary?.endDate || '',
 })
 
@@ -250,6 +300,15 @@ function handlePhotoRemoved() {
   removeExistingPhoto.value = true
 }
 
+function handleSeniorChange(event) {
+  form.missionaryType = event.target.checked ? 'senior' : 'fullTime'
+
+  if (!event.target.checked) {
+    form.isCouple = false
+    form.spouseFirstName = ''
+  }
+}
+
 async function save() {
   if (!selectedLocation.value) {
     message.value = 'Please select a location from the search results.'
@@ -266,7 +325,10 @@ async function save() {
       firstName: form.firstName.trim(),
       middleName: form.middleName.trim(),
       lastName: form.lastName.trim(),
-      gender: form.gender,
+      missionaryType: form.missionaryType,
+      isCouple: form.missionaryType === 'senior' ? form.isCouple : false,
+      spouseFirstName: form.isCouple ? form.spouseFirstName.trim() : '',
+      gender: form.isCouple ? null : form.gender,
       mission: form.mission.trim(),
       startDate: form.startDate,
       endDate: form.endDate,

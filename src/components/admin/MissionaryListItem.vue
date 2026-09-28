@@ -1,14 +1,14 @@
 <template>
   <div class="flex items-center gap-4 border-b border-slate-100 p-4 last:border-b-0">
-    <img :src="profileImage" :alt="fullName" class="h-16 w-16 shrink-0 rounded-full object-cover" />
+    <img
+      :src="profileImage"
+      :alt="displayName"
+      class="h-16 w-16 shrink-0 rounded-full object-cover"
+    />
 
     <div class="min-w-0 flex-1">
       <h2 class="font-semibold text-slate-900">
-        <span v-if="title">
-          {{ title }}
-        </span>
-
-        {{ fullName }}
+        {{ displayName }}
       </h2>
 
       <p v-if="formattedMission" class="text-sm text-slate-500">
@@ -48,8 +48,8 @@
 import { computed } from 'vue'
 
 import CTSIcon from '@/components/ui/CTSIcon.vue'
-import { getProfileImage } from '@/utils/profile'
 import { formatMissionDates } from '@/utils/dates'
+import { getAdminDisplayName, getProfileImage } from '@/utils/profile'
 
 const props = defineProps({
   missionary: {
@@ -60,20 +60,8 @@ const props = defineProps({
 
 defineEmits(['edit', 'delete'])
 
-const fullName = computed(() => {
-  return [props.missionary.firstName, props.missionary.lastName].filter(Boolean).join(' ')
-})
-
-const title = computed(() => {
-  if (props.missionary.gender === 'male') {
-    return 'Elder'
-  }
-
-  if (props.missionary.gender === 'female') {
-    return 'Sister'
-  }
-
-  return ''
+const displayName = computed(() => {
+  return getAdminDisplayName(props.missionary)
 })
 
 const formattedMission = computed(() => {

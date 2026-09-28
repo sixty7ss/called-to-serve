@@ -3,8 +3,17 @@
     <div class="mx-auto max-w-5xl">
       <MissionaryList
         v-if="viewMode === 'list'"
-        :missionaries="missionaries"
+        v-model:search-query="searchQuery"
+        v-model:status-filter="statusFilter"
+        v-model:type-filter="typeFilter"
+        v-model:country-filter="countryFilter"
+        :missionaries="filteredMissionaries"
         :loading="loading"
+        :countries="adminCountries"
+        :shown-count="filteredMissionaries.length"
+        :has-filters="hasAdminFilters"
+        :has-senior-missionaries="hasSeniorMissionaries"
+        @clear-filters="clearAdminFilters"
         @add="openAddForm"
         @edit="openEditForm"
         @delete="removeMissionary"
@@ -23,7 +32,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
 import { useRouter } from 'vue-router'
 
@@ -34,14 +43,103 @@ import { logout } from '@/services/auth'
 
 import { deleteMissionary, getMissionaries } from '@/services/missionaryAdmin'
 
-import { getFullName } from '@/utils/profile'
+import { getFullName, isMissionCompleted, isMissionUpcoming } from '@/utils/profile'
 
 const router = useRouter()
 
 const missionaries = ref([])
 const loading = ref(true)
+
 const viewMode = ref('list')
 const selectedMissionary = ref(null)
+
+const searchQuery = ref('')
+const statusFilter = ref('')
+const typeFilter = ref('')
+const countryFilter = ref('')
+
+const adminCountries = computed(() => {
+  return [
+    ...new Set(missionaries.value.map((missionary) => missionary.country).filter(Boolean)),
+  ].sort((a, b) =>
+    a.localeCompare(b, undefined, {
+      sensitivity: 'base',
+    }),
+  )
+})
+
+const hasAdminFilters = computed(() => {
+  return Boolean(searchQuery.value || statusFilter.value || typeFilter.value || countryFilter.value)
+})
+
+const filteredMissionaries = computed(() => {
+  const search = searchQuery.value.trim().toLowerCase()
+
+  return [...missionaries.value]
+    .filter((missionary) => {
+      if (search) {
+        const searchableText = [
+          missionary.firstName,
+          missionary.middleName,
+          missionary.lastName,
+          missionary.mission,
+          missionary.city,
+          missionary.state,
+          missionary.country,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+
+        if (!searchableText.includes(search)) {
+          return false
+        }
+      }
+
+      if (typeFilter.value && (missionary.missionaryType || 'fullTime') !== typeFilter.value) {
+        return false
+      }
+
+      if (countryFilter.value && missionary.country !== countryFilter.value) {
+        return false
+      }
+
+      if (statusFilter.value) {
+        const upcoming = isMissionUpcoming(missionary)
+
+        const completed = isMissionCompleted(missionary)
+
+        if (statusFilter.value === 'upcoming' && !upcoming) {
+          return false
+        }
+
+        if (statusFilter.value === 'current' && (upcoming || completed)) {
+          return false
+        }
+
+        if (statusFilter.value === 'completed' && !completed) {
+          return false
+        }
+      }
+
+      return true
+    })
+    .sort((a, b) => {
+      if (!a.startDate && !b.startDate) {
+        return 0
+      }
+
+      if (!a.startDate) {
+        return 1
+      }
+
+      if (!b.startDate) {
+        return -1
+      }
+
+      return a.startDate.localeCompare(b.startDate)
+    })
+})
 
 async function loadMissionaries() {
   loading.value = true
@@ -62,6 +160,7 @@ function openAddForm() {
 
 function openEditForm(missionary) {
   selectedMissionary.value = missionary
+
   viewMode.value = 'form'
 }
 
@@ -72,7 +171,6 @@ function closeForm() {
 
 async function handleSaved() {
   await loadMissionaries()
-
   closeForm()
 }
 
@@ -94,9 +192,19 @@ async function removeMissionary(missionary) {
   }
 }
 
+const hasSeniorMissionaries = computed(() => {
+  return missionaries.value.some((missionary) => missionary.missionaryType === 'senior')
+})
+
+function clearAdminFilters() {
+  searchQuery.value = ''
+  statusFilter.value = ''
+  typeFilter.value = ''
+  countryFilter.value = ''
+}
+
 async function handleLogout() {
   await logout()
-
   await router.push('/login')
 }
 
@@ -104,7 +212,11 @@ function goToGlobe() {
   router.push('/')
 }
 
-onMounted(() => {
-  loadMissionaries()
+watch(hasSeniorMissionaries, (hasSeniors) => {
+  if (!hasSeniors && typeFilter.value === 'senior') {
+    typeFilter.value = ''
+  }
 })
+
+onMounted(loadMissionaries)
 </script>

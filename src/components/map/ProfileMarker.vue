@@ -83,11 +83,7 @@ const markerClasses = computed(() => [
 
   markerSizeClasses.value,
 
-  completed.value
-    ? 'border-slate-400 grayscale-[40%] saturate-[70%] opacity-90'
-    : upcoming.value
-      ? 'border-amber-400 opacity-90'
-      : 'border-white',
+  'border-white',
 
   props.active ? 'scale-110 ring-4 ring-sky-400 ring-offset-2 ring-offset-slate-950' : '',
 ])
@@ -101,6 +97,6 @@ const badgeClasses = computed(() => [
 
   badgeSizeClasses.value,
 
-  completed.value ? 'bg-slate-700' : 'bg-amber-500',
+  completed.value ? 'bg-green-600' : 'bg-amber-500',
 ])
 </script>

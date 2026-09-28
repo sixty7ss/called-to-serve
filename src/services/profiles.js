@@ -9,11 +9,11 @@ export async function getProfiles() {
     const data = document.data()
 
     return {
-      id: document.id,
-
       ...data,
 
-      name: `${data.firstName} ${data.lastName}`,
+      id: document.id,
+
+      name: [data.firstName, data.middleName, data.lastName].filter(Boolean).join(' '),
 
       bounds: [
         [data.west, data.south],
