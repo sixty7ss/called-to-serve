@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { isMissionCompleted } from '@/utils/profile'
 
 export function useMissionaryFilters(profiles) {
-  const FILTER_RESET_DELAY = 180000
+  const FILTER_RESET_DELAY = 60000
 
   let filterResetTimer = null
 
