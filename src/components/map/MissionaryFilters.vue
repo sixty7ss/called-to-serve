@@ -8,7 +8,7 @@
       <p class="mt-1 text-sm text-white/70">Missionaries Around the World</p>
 
       <!-- STATUS -->
-      <div class="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-white/10 p-1">
+      <div class="mt-4 grid grid-cols-3 gap-1 rounded-xl bg-white/10 p-1">
         <button
           type="button"
           :class="[
@@ -19,7 +19,7 @@
           ]"
           @click="$emit('update:missionaryStatus', 'current')"
         >
-          Current / Called
+          Current
         </button>
 
         <button
@@ -34,10 +34,23 @@
         >
           Returned
         </button>
+
+        <button
+          type="button"
+          :class="[
+            'rounded-lg px-3 py-2 text-xs font-medium transition sm:text-sm',
+            missionaryStatus === 'all'
+              ? 'bg-white text-slate-900 shadow'
+              : 'text-white/70 hover:bg-white/10 hover:text-white',
+          ]"
+          @click="$emit('update:missionaryStatus', 'all')"
+        >
+          All
+        </button>
       </div>
 
       <!-- MISSIONARY TYPE -->
-      <div class="mt-2 grid grid-cols-2 gap-1 rounded-xl bg-white/10 p-1">
+      <div class="mt-2 grid grid-cols-3 gap-1 rounded-xl bg-white/10 p-1">
         <button
           type="button"
           :class="[
@@ -63,20 +76,32 @@
         >
           Senior
         </button>
+
+        <button
+          type="button"
+          :class="[
+            'rounded-lg px-3 py-2 text-xs font-medium transition sm:text-sm',
+            missionaryType === 'all'
+              ? 'bg-white text-slate-900 shadow'
+              : 'text-white/70 hover:bg-white/10 hover:text-white',
+          ]"
+          @click="$emit('update:missionaryType', 'all')"
+        >
+          All
+        </button>
       </div>
 
       <!-- REFINEMENT FILTERS -->
       <div class="mt-3 grid grid-cols-2 gap-2">
-        <!-- LAST NAME -->
         <label class="flex flex-col gap-1 text-xs text-white/60">
-          Last name
+          Last Name
 
           <select
             :value="selectedLetter"
             class="min-w-0 rounded-lg border border-white/10 bg-slate-900/80 px-3 py-2 text-sm text-white outline-none transition focus:border-white/30"
             @change="$emit('update:selectedLetter', $event.target.value)"
           >
-            <option value="">All names</option>
+            <option value="">All</option>
 
             <option v-for="letter in lastNameLetters" :key="letter" :value="letter">
               {{ letter }}
@@ -84,7 +109,6 @@
           </select>
         </label>
 
-        <!-- COUNTRY -->
         <label class="flex flex-col gap-1 text-xs text-white/60">
           Country
 
@@ -93,7 +117,7 @@
             class="min-w-0 rounded-lg border border-white/10 bg-slate-900/80 px-3 py-2 text-sm text-white outline-none transition focus:border-white/30"
             @change="$emit('update:selectedCountry', $event.target.value)"
           >
-            <option value="">All countries</option>
+            <option value="">All</option>
 
             <option v-for="country in countries" :key="country" :value="country">
               {{ country }}
@@ -101,7 +125,6 @@
           </select>
         </label>
 
-        <!-- STATE -->
         <label class="col-span-2 flex flex-col gap-1 text-xs text-white/60">
           State (U.S.)
 
@@ -114,7 +137,7 @@
             ]"
             @change="$emit('update:selectedState', $event.target.value)"
           >
-            <option value="">All states</option>
+            <option value="">All</option>
 
             <option v-for="state in states" :key="state" :value="state">
               {{ state }}
@@ -122,7 +145,6 @@
           </select>
         </label>
 
-        <!-- DECADE -->
         <label
           v-if="missionaryStatus === 'returned'"
           class="col-span-2 flex flex-col gap-1 text-xs text-white/60"
@@ -143,7 +165,6 @@
         </label>
       </div>
 
-      <!-- FOOTER -->
       <div class="mt-3 flex items-center justify-between text-xs text-white/50">
         <span> {{ shownCount }} shown </span>
 
@@ -164,12 +185,12 @@
 defineProps({
   missionaryStatus: {
     type: String,
-    required: true,
+    default: 'current',
   },
 
   missionaryType: {
     type: String,
-    required: true,
+    default: 'fullTime',
   },
 
   selectedLetter: {

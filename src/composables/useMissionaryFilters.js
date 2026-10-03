@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { isMissionCompleted } from '@/utils/profile'
 
 export function useMissionaryFilters(profiles) {
-  const FILTER_RESET_DELAY = 60000
+  const FILTER_RESET_DELAY = 180000
 
   let filterResetTimer = null
 
@@ -24,6 +24,10 @@ export function useMissionaryFilters(profiles) {
   }
 
   const typeProfiles = computed(() => {
+    if (missionaryType.value === 'all') {
+      return profiles.value
+    }
+
     return profiles.value.filter((profile) => {
       const profileType = profile.missionaryType || 'fullTime'
 
@@ -32,6 +36,10 @@ export function useMissionaryFilters(profiles) {
   })
 
   const statusProfiles = computed(() => {
+    if (missionaryStatus.value === 'all') {
+      return typeProfiles.value
+    }
+
     return typeProfiles.value.filter((profile) => {
       const completed = isMissionCompleted(profile)
 
@@ -107,7 +115,7 @@ export function useMissionaryFilters(profiles) {
 
     const profileType = profile.missionaryType || 'fullTime'
 
-    if (profileType !== missionaryType.value) {
+    if (missionaryType.value !== 'all' && profileType !== missionaryType.value) {
       return false
     }
 
@@ -192,7 +200,6 @@ export function useMissionaryFilters(profiles) {
   function resetAllFilters() {
     missionaryStatus.value = 'current'
     missionaryType.value = 'fullTime'
-
     selectedLetter.value = ''
     selectedCountry.value = ''
     selectedState.value = ''
@@ -226,20 +233,13 @@ export function useMissionaryFilters(profiles) {
   function handleUserActivity() {
     if (filtersAreDefault()) {
       clearTimeout(filterResetTimer)
+
       filterResetTimer = null
       return
     }
 
     startFilterResetTimer()
   }
-
-  watch(missionaryStatus, () => {
-    clearRefinementFilters()
-  })
-
-  watch(missionaryType, () => {
-    clearRefinementFilters()
-  })
 
   watch(selectedCountry, (country) => {
     if (country && !isUnitedStatesCountry(country)) {
@@ -260,30 +260,6 @@ export function useMissionaryFilters(profiles) {
       startFilterResetTimer()
     },
   )
-
-  return {
-    missionaryStatus,
-    missionaryType,
-
-    selectedLetter,
-    selectedCountry,
-    selectedState,
-    selectedDecade,
-
-    lastNameLetters,
-    countries,
-    states,
-    decades,
-
-    stateFilterDisabled,
-    hasRefinementFilters,
-
-    visibleProfiles,
-    sortedProfiles,
-
-    isProfileVisible,
-    clearRefinementFilters,
-  }
 
   onMounted(() => {
     window.addEventListener('pointerdown', handleUserActivity)
@@ -310,4 +286,28 @@ export function useMissionaryFilters(profiles) {
 
     window.removeEventListener('touchstart', handleUserActivity)
   })
+
+  return {
+    missionaryStatus,
+    missionaryType,
+
+    selectedLetter,
+    selectedCountry,
+    selectedState,
+    selectedDecade,
+
+    lastNameLetters,
+    countries,
+    states,
+    decades,
+
+    stateFilterDisabled,
+    hasRefinementFilters,
+
+    visibleProfiles,
+    sortedProfiles,
+
+    isProfileVisible,
+    clearRefinementFilters,
+  }
 }
